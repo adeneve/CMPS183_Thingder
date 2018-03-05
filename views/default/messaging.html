@@ -1,0 +1,44 @@
+{{extend 'layout.html'}}
+{{from gluon.tools import prettydate}}
+<h1>Send and receive messages</h1>
+{{=form3}}
+
+<table class="table"><h3>
+    My Messages
+    </h3>
+        {{for row in rows:}}
+        <tr>
+            <td>From: <a href="{{=URL('show_profile',args=row.created_by)}}">{{=row.created_by.first_name}}</a></td>
+            <td>{{=prettydate(row.created_on)}}</td>
+            <td>{{=row.body}}</td>
+            
+            
+        </tr>
+        {{pass}}
+    </table>
+
+{{if request.function == 'index' or request.function == 'messaging':}}
+<script>
+  $(function() {
+    var availableTags = [
+        {{recepients = db(db.auth_user).select()}}
+        {{l=[]}}
+    {{for user in recepients:}}
+    {{l.append(user.first_name)}}
+  {{pass}}
+      {{ for x in l:}}
+        {{if x == l[len(l)-1]:}} 
+            "{{=x}}"
+    {{else:}} "{{=x}}",
+{{pass}}
+    {{pass}}
+    ];
+    $( "#messages_recepient" ).autocomplete({
+      source: availableTags
+    });
+    $( "#search" ).autocomplete({
+      source: availableTags
+    });
+  });
+  </script>
+{{pass}}

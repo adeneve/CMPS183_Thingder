@@ -1,0 +1,230 @@
+<!--index listings page -->
+
+{{extend 'layout.html'}}
+<table>
+    <tr>
+        <td>
+<!--category search bar-->
+    <form {{if not len(request.args): }}action="showByCategory" {{pass}} {{if len(request.args): }} action="../showByCategory"{{pass}} method="post">
+        <select id="category_name" name='filter1'>
+            <option disabled selected>Category</option>
+            <option>Computers</option>
+            <option>Car</option>
+            <option>Electronics</option>
+            <option>House</option>
+            <option>Video Games</option>
+            <option>Misc.</option>
+            <input id="category_button" style="margin: 10px; height: 40px" type="submit" value="filter" disabled>
+        </select>
+
+    </form>  
+        </td>
+        <td>
+    </form>
+    <!--location search bar-->
+    <form {{if not len(request.args): }}action="showByLocations" {{pass}} {{if len(request.args): }} action="../showByLocations"{{pass}} method="post">
+        <select id="location_name" name='filter2'>
+            <option disabled selected>Location</option>
+            <option>Bakersfield</option>
+            <option>Chico</option>
+            <option>Fresno</option>
+            <option>Gold Country</option>
+            <option>Hanford</option>
+            <option>Inland Empire</option>
+            <option>Las Vegas</option>
+            <option>Los Angeles</option>
+            <option>Mercred</option>
+            <option>Modestro</option>
+            <option>Orange Co</option>
+            <option>Palm Springs</option>
+            <option>Reno</option>
+            <option>Sacramento</option>
+            <option>San Luis Obispo</option>
+            <option>Santa Barbara</option>
+            <option>Stockton</option>
+            <option>San Jose</option>
+            <option>Santa Cruz</option>
+            <input id="location_button" style="margin: 10px; height: 40px" type="submit" value="Location" disabled>
+        </select>
+    </form>
+        </td>
+    </tr>
+    
+    </table>
+            
+{{if page:}}
+<a href="{{=URL(args=[page-1])}}">previous</a>
+{{pass}}
+{{if page and len(rows)>items_per_page:}}
+<b>|</b>
+{{pass}}
+{{if len(rows)>items_per_page:}}
+<a href="{{=URL(args=[page+1])}}">next</a>
+{{pass}}    
+    
+    <table>
+    <tr>
+        {{for i,row in enumerate(rows):}}
+        {{if i==items_per_page: break}}
+    
+        <td class="card-table">
+            <a href="{{=URL('show',args=row.id)}}">
+              <div class="thecard">
+                <div class="card-img">
+                  {{if row.image:}}
+                        <img vertical-align="" width="150px" height="250px" src="{{=URL('download', args=row.image)}}"/>
+                  {{pass}}
+                </div>
+                <div class="card-caption">
+                  <span class="date">{{=row.created_on}}</span>
+                    {{if len(row.title) > 25:}}
+                        <h1>{{=row.title[:23] + "..."}}</h1>
+                        {{else:}}
+                        <h1>{{=row.title}}</h1>
+                        {{pass}}
+                        {{if len(row.created_by.first_name) > 17:}}
+                         <p>Created by:{{=row.created_by.first_name[:14] + "..."}}</p>
+                        {{else:}}
+                        <p>Created by: {{=row.created_by.first_name}}</p>
+                        {{pass}}
+                        {{if len(row.interests) > 17:}}
+                        <p>Interested in: {{=row.interests[:14] + "..."}}</p>
+                        {{else:}}
+                        <p>Interested in: {{=row.interests}}</p>
+                        {{pass}}
+                        {{if len(row.offers) > 17:}}
+                        <p>Offering: {{=row.offers[:14] + "..."}}</p>
+                        {{else:}}
+                        <p>Offering: {{=row.offers}}</p>
+                        {{pass}}
+                </div>
+              </div>
+            </a>
+        </td>
+        
+        {{pass}}
+        {{pass}}
+        </tr>
+    </table>
+</html>
+<script>
+    // Input box is initially disabled if a category is not specified. When a category is chosen, remove the disabled property from input
+    // so that the box is usable - Joseph Campuzano
+    $(document).ready(function() {
+        var e = document.getElementById("category_name")
+        var f = document.getElementById("location_name")
+        var input = document.getElementById("category_button")
+        var input2 = document.getElementById("location_button")
+        $(e).click(function() {
+            if (e.selectedIndex > 0) {
+                input.removeAttribute("disabled");
+            }
+        });
+        
+        $(f).click(function() {
+            if (f.selectedIndex > 0) {
+                input2.removeAttribute("disabled");
+            }
+        });
+    });
+    /* Javascript for search bar auto complete */
+    $(function() {
+    var availableTags = [
+    {{recepients = db(db.auth_user).select()}}
+        {{l=[]}}
+    {{for user in recepients:}}
+    {{l.append(user.first_name)}}
+    {{pass}}
+      {{ for x in l:}}
+        {{if x == l[len(l)-1]:}} 
+            "{{=x}}"
+    {{else:}} "{{=x}}",
+{{pass}}
+    {{pass}}
+    ];
+    $( "#search" ).autocomplete({
+      source: availableTags
+      
+    });
+  });
+ 
+</script>
+<body onload="initialize()">
+ <div id="map" style="display: none;"></div>
+    
+ <div id="close_posts" class="well" >
+     <h3>Nearby Listings</h3>
+     <h4 id="close_posts1">
+         
+     </h4>
+    </div>
+    
+</body>
+
+<!--map script to show nearby locations - adn-->
+<script>
+    {{if auth.is_logged_in():}}
+var geocoder;
+  /*var map;*/
+  function initialize() {
+    geocoder = new google.maps.Geocoder();
+    var latlng = new google.maps.LatLng(-34.397, 150.644);
+    var mapOptions = {
+      zoom: 8,
+      center: latlng
+    }
+    
+    map = new google.maps.Map(document.getElementById("map"), mapOptions);
+    var user_longitude;
+    var user_latitude;
+    var longitude;
+    var latitude;
+    var nearby;
+      user_zip = '{{=user_location}}'
+      
+      geocoder.geocode( { 'address': user_zip}, function(results, status) {
+      if (status == google.maps.GeocoderStatus.OK) {
+        map.setCenter(results[0].geometry.location);
+        var marker = new google.maps.Marker({
+            map: map,
+            position: results[0].geometry.location
+        });
+          user_longitude = results[0].geometry.location.lng();
+          user_latitude = results[0].geometry.location.lat();
+          
+          //alert(results[0].geometry.location + 'hi');
+      } else {
+        //alert("Geocode was not successful for the following reason: " + status);
+      }
+    });
+      
+    {{for x in range(1,5):}}
+    {{if db(db.posts.id==x).select():}}
+    /*var address = 'New York';*/
+    var address = '{{=db(db.posts.id==x).select()[0].locations}}'
+    
+    geocoder.geocode( { 'address': address}, function(results, status) {
+      if (status == google.maps.GeocoderStatus.OK) {
+        map.setCenter(results[0].geometry.location);
+        var marker = new google.maps.Marker({
+            map: map,
+            position: results[0].geometry.location
+        });
+          /* instead of ajax just print a statement with the address thats close*/
+           longitude = results[0].geometry.location.lng();
+           latitude = results[0].geometry.location.lat();
+          /*add anchor tag to filter by location*/
+          if (Math.abs(Math.abs(longitude)-Math.abs(user_longitude)) < 40 & Math.abs(latitude)-Math.abs(user_latitude)< 2){ $('#close_posts1').append('{{=db(db.posts.id==x).select()[0].locations}}'+ ', '); }
+         // alert(results[0].geometry.location);
+      } else {
+        //alert("Geocode was not successful for the following reason: " + status);
+      }
+    });
+      {{pass}} {{pass}} {{pass}}
+      
+  }
+</script>
+ <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD8lo8mW7zn9oahWIJ4Eo4ig_gVI4g-aUA&callback=initMap"
+    async defer></script>
+  </body>
+</html>

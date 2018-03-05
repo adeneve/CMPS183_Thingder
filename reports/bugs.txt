@@ -1,0 +1,11 @@
+bugs-
+
+-When filtering by location or by cateogry, if the category or location contains a space in the name then the controller cannot query results successfully 
+ This is because locations and cateogries in the database contain whitespace whereas arguments passed when paginating through filtered pages have underscores;
+ replace("_", " ") did not work.
+
+ -nearby locations may be redundant, For example while iterating posts if two have Los Angeles as a location field then Los Angeles gets printed twice.
+
+ -Auto-complete search bar is not implemented in every page. Search bar searches via first name, not by user id. So searching users with the same first name will only query the first auth_user found. Using first and last name would be better but the bug could still occur. Also the auto-complete window is not paginated.
+
+ -Some listing cards are a little larger than the others.

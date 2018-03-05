@@ -1,0 +1,25 @@
+{{extend 'layout.html'}}
+<h1>Edit your profile information here</h1>
+{{=form}}
+<script>
+  $(function() {
+    var availableTags = [
+    {{recepients = db(db.auth_user).select()}}
+        {{l=[]}}
+    {{for user in recepients:}}
+    {{l.append(user.first_name)}}
+    {{pass}}
+      {{ for x in l:}}
+        {{if x == l[len(l)-1]:}} 
+            "{{=x}}"
+    {{else:}} "{{=x}}",
+{{pass}}
+    {{pass}}
+    ];
+    $( "#search" ).autocomplete({
+      source: availableTags
+      
+    });
+  });
+    
+  </script>

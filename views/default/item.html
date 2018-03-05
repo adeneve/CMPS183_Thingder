@@ -1,0 +1,35 @@
+<!--match page-->
+
+{{extend 'layout.html'}}
+<h1>Your Item: </h1>
+<h1>{{=curr_item.created_by.first_name}}</h1>
+<br>
+
+<table>
+  <tr>
+    <td>
+        <img height="225" width="225" class="thumbnail" src="{{=URL('download', args=curr_item.image)}}"/>
+    </td>
+    <td>
+        <ul>
+            <li>Title:{{=curr_item.title}}</li>
+            <li>Interests:{{=curr_item.interests}}</li>
+            <li>Offers: {{=curr_item.offers}}</li>
+        </ul>
+     </td> 
+
+  </tr>
+</table>
+<br>
+
+<!--show amtches from default.py db calculation-->
+<h1>Trade Match</h1>
+
+        {{for row in match:}}
+                <a href="{{=URL('show',args=row.id)}}"><img height="225" width="225" class="thumbnail" src="{{=URL('download', args=row.image)}}"/></a>
+                {{pass}}
+
+<h1>Close Match Items</h1>
+        {{for row in one_way_match:}}
+                <a href="{{=URL('show',args=row.id)}}"><img height="225" width="225" class="thumbnail" src="{{=URL('download', args=row.image)}}"/></a>
+      {{pass}}

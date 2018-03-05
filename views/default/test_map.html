@@ -1,0 +1,87 @@
+{{extend 'layout.html'}}
+<script>
+var geocoder;
+  var map;
+  function initialize() {
+    geocoder = new google.maps.Geocoder();
+    var latlng = new google.maps.LatLng(-34.397, 150.644);
+    var mapOptions = {
+      zoom: 8,
+      center: latlng
+      
+    }
+    map = new google.maps.Map(document.getElementById("map"), mapOptions);
+    var city = '{{=location}}';
+    var zip = '{{=user_zip}}';
+    geocoder.geocode( { 'address': city}, function(results, status) {
+      if (status == google.maps.GeocoderStatus.OK) {
+        map.setCenter(results[0].geometry.location);
+        var marker = new google.maps.Marker({
+            map: map,
+            position: results[0].geometry.location
+            
+        });
+          var infowindow = new google.maps.InfoWindow({
+    content: "<span>City Location</span>"
+});
+          marker.addListener('click', function() {
+    infowindow.open(map, marker);
+  });
+        
+          //alert('longitude =' + results[0].geometry.location.lng())
+      } else {
+        alert("Geocode was not successful for the following reason: " + status);
+      }
+    });
+      {{if user_zip:}}
+   geocoder.geocode( { 'address': zip}, function(results, status) {
+      if (status == google.maps.GeocoderStatus.OK) {
+        
+        var marker2 = new google.maps.Marker({
+            map: map,
+            position: results[0].geometry.location
+            
+        });
+          var infowindow2 = new google.maps.InfoWindow({
+    content: "<span>area code: {{=user_zip}}</span>"
+});
+          marker2.addListener('click', function() {
+    infowindow2.open(map, marker2);
+  });
+        
+          alert('longitude =' + results[0].geometry.location.lng())
+      } else {
+        alert("Geocode was not successful for the following reason: " + status);
+      }
+    });{{pass}}
+  }
+
+  function codeAddress() {
+    /*var address = document.getElementById("address").value;*/
+    var address = document.getElementById("address").value;
+    geocoder.geocode( { 'address': address}, function(results, status) {
+      if (status == google.maps.GeocoderStatus.OK) {
+        map.setCenter(results[0].geometry.location);
+        var marker = new google.maps.Marker({
+            map: map,
+            position: results[0].geometry.location
+        });
+      } else {
+        alert("Geocode was not successful for the following reason: " + status);
+      }
+    });
+  }
+</script>
+<body onload="initialize()">
+ <div id="map" style="width: 1000px; height: 480px;"></div>
+  <div>
+    <input id="address" type="textbox" value="Los Angeles">
+    <input type="button" value="Search" onclick="codeAddress()">
+  </div>
+</body>
+       
+    
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD8lo8mW7zn9oahWIJ4Eo4ig_gVI4g-aUA&callback=initMap"
+    async defer></script>
+  </body>
+</html>

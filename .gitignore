@@ -1,0 +1,25 @@
+*.DS_Store
+*.DS_Store?
+*.bak2
+
+#stuff to ignore (breaks everything)
+cache
+databases
+errors
+sessions
+uploads
+
+
+/*.py[co]
+static/temp
+
+progress.log
+
+#translations
+.mo
+.mr.developer.cfg
+*.bak
+Thumbs.db
+*.table
+static/temp
+

@@ -1,0 +1,132 @@
+{{from gluon.tools import prettydate}}
+{{extend 'layout.html'}}
+<link rel="stylesheet" href="{{=URL('static','css/my_profileStyle.css')}}"/>
+
+
+<div class="col-30">
+<h1>{{=thing.first_name}} {{=thing.last_name}}</h1>
+<h3></h3>
+<h3></h3>
+{{for info in infos:}}
+{{if info.image:}}
+        <tr>
+            <td><img width="200px" height="200px"
+     src="{{=URL('download', args=info.image)}}" /></td>
+        </tr>
+{{else:}}
+        <tr>
+            <td><img width="200px" height="200px"
+     src="{{=URL('static', 'images/defaultprofile.png')}}" /></td>
+        </tr>
+        {{pass}}
+
+            <h3></h3>
+{{age=info.age}}
+{{zip=info.zip_code}}
+{{abtme=info.about_me}}
+
+            <td>{{if age==None:}} {{else:}}Age: {{=info.age}}{{pass}}</td>
+            <h3></h3>
+            <td>{{if zip==None:}} {{else:}}Zip Code: {{=info.zip_code}}{{pass}}</td>
+            <h3></h3>
+            <td>{{if abtme==None:}} {{else:}}About {{=thing.first_name}}: {{=info.about_me}}{{pass}}</td>
+            <h3></h3>       
+        {{pass}}
+
+{{for rate in rates:}} 
+{{userrating=rate.rating}}
+User Rating: {{if userrating==0.0:}}This user has no ratings yet. Go rate them!{{else:}}{{=rate.rating}}{{pass}}
+{{pass}}
+            
+        {{pass}}
+
+
+    {{if auth.user:}}
+    
+    <br><br> <br>
+    <form action='../rating_callback' method="post">
+        <div class="rating_container well" id="radioButtonContainerId">
+    <fieldset class="rating">     
+        <tr data-id="{{=get_ID}}">
+        <input data-id="{{=get_ID}}" type="radio" name="stars" id="4_stars" value="4" >
+        <label class="stars" for="4_stars">4 stars</label>
+        <input data-id="{{=get_ID}}" type="radio" name="stars" id="3_stars" value="3" >
+        <label class="stars" for="3_stars">3 stars</label>
+        <input data-id="{{=get_ID}}" type="radio" name="stars" id="2_stars" value="2" >
+        <label class="stars" for="2_stars">2 stars</label>
+        <input data-id="{{=get_ID}}" type="radio" name="stars" id="1_stars" value="1" >
+        <label class="stars" for="1_stars">1 star</label>
+        <input data-id="{{=get_ID}}" type="radio" name="stars" id="0_stars" value="0" required>
+        <label class="stars" for="0_stars">0 star</label>
+        <span  class="label"> Rating: </span>
+        </tr>
+        </div>
+    </fieldset>
+        </tr>
+    
+    </form>
+    <br>
+    <form enctype="multipart/form-data" action="{{=URL('messaging',args=get_ID)}}">
+        <input type="submit" value="message {{=thing.first_name}}"/>
+    
+    </form>
+    {{pass}}
+    </div>
+</body>
+</html>
+
+<script>
+    
+    function do_ajax_vote(t, rating){
+        var id =jQuery(t).attr('data-id');
+        jQuery.ajax({method:'post', url:'{{=URL('../rating_callback')}}',
+                     data:{'rate':rating, 'user':id},
+                    success: function(data){}  });
+    }
+    $(document).ready(function() {
+        $('#radioButtonContainerId input:radio').click(function() {
+    if ($(this).val() === '4') {
+      do_ajax_vote(this, '5');
+    } if ($(this).val() === '3') {
+      do_ajax_vote(this, '4');
+    } if ($(this).val() === '2'){
+      do_ajax_vote(this, '3');
+    }
+            if ($(this).val() === '1'){
+      do_ajax_vote(this, '2');
+    }
+            if ($(this).val() === '0'){
+      do_ajax_vote(this, '1');
+    }
+  });
+    });
+</script>
+
+<div class="col-70">
+    <h3>Recent Posts</h3>
+    <table class="table posts-table">
+        <tr>
+            <th>Title</th>
+            <th>Date Posted</th>
+            <th>Interests</th>
+            <th>Offers</th>
+            
+        {{for row in rows:}}
+        <tr>
+            <td>
+                <p><a href="{{=URL('show',args=row.id)}}">{{=row.title}}</a></p>
+                {{if row.image:}}
+                    <img height="88px" src="{{=URL('download', args=row.image)}}" />
+                {{else:}}
+                    <img height="88px" alt="">
+                {{pass}}
+            <td>{{=prettydate(row.created_on)}}</td>
+            <td>{{=row.interests}}</td>
+            <td>{{=row.offers}}</td>
+
+            {{if row.image:}}
+        </tr>
+        {{pass}}
+        {{pass}}
+     </table>
+</div>

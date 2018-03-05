@@ -1,0 +1,136 @@
+{{extend 'layout.html'}}
+{{from gluon.tools import prettydate}}
+<link rel="stylesheet" href="{{=URL('static','css/show.css')}}"/>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Rating</title>
+    <link rel='stylesheet' type='text/css' href='../static/css/style.css'>
+</head>
+
+<body>
+    
+    <div class="row">
+    <div class="col-md-6">
+    <div class="pic-panel">
+        {{if post.image:}}
+            <img class="img-responsive" src="{{=URL('download', args=post.image)}}"/>
+        {{pass}}
+    </div>
+    </div>
+    
+    <div class="col-md-6">
+    <div class="info-panel">
+        <h2>{{=post.title}}</h2>
+        <i>Posted: {{=post.created_on.strftime("%m/%d/%Y")}} by <a href="{{=URL('show_profile',args=post.created_by.id)}}">{{=post.created_by.first_name}}</a></i>
+        <br>
+        
+
+        <br>
+        <ul>
+            <li><h4>Wants: {{=post.interests}}</h4></li>
+            <li><h4>offering: {{=post.offers}}</h4></li>
+        </ul>
+        {{if post.created_by == auth.user_id:}}
+        <a href="{{=URL('edit_post',args=post.id)}}"><button><span class="glyphicon glyphicon-pencil"></span>  Edit Post</button></a>
+         {{pass}}
+        <a href="{{=URL('../test_map',args=[post.locations,post.created_by])}}"><button><span class="glyphicon glyphicon-map-marker"></span>  See on map</button></a>
+        
+
+    </div>
+    </div>
+    </div>
+    
+    <div class="row">
+    <div class="col-md-6">
+    {{if auth.user:}}
+        <div class="rating-container">
+        <!-- add conditional python to control which star is checked; pull rating from database -->
+        <h3>{{if voter:}} vote again {{else:}} rate this user {{pass}}</h3>
+    
+        <br>
+        <div class="rating-box">
+            <form action='../rating_callback' method="post">
+            <div id="radioButtonContainerId">
+                <fieldset class="rating">     
+                <tr data-id="{{=post.created_by}}">
+                <input data-id="{{=post.created_by}}" type="radio" name="stars" id="4_stars" value="4" >
+                <label class="stars" for="4_stars">4 stars</label>
+                <input data-id="{{=post.created_by}}" type="radio" name="stars" id="3_stars" value="3" >
+                <label class="stars" for="3_stars">3 stars</label>
+                <input data-id="{{=post.created_by}}" type="radio" name="stars" id="2_stars" value="2" >
+                <label class="stars" for="2_stars">2 stars</label>
+                <input data-id="{{=post.created_by}}" type="radio" name="stars" id="1_stars" value="1" >
+                <label class="stars" for="1_stars">1 star</label>
+                <input data-id="{{=post.created_by}}" type="radio" name="stars" id="0_stars" value="0" required>
+                <label class="stars" for="0_stars">0 star</label>
+                <span  class="label"> Rating: </span>
+                </tr>
+                </fieldset>
+            </div>
+            </form>
+        </div>
+    </div>
+    </div>
+    </div>
+</body>
+</html>
+<form enctype="multipart/form-data" action="{{=URL('messaging',args=post.User_ID)}}">
+    <input type="submit" value="message {{=post.created_by.first_name}}"/>
+    
+</form>
+
+   
+    {{pass}}
+
+
+
+</body>
+</html>
+
+<script>
+    function do_ajax_vote(t, rating){
+        var id =jQuery(t).attr('data-id');
+        jQuery.ajax({method:'post', url:'{{=URL('../rating_callback')}}',
+                     data:{'rate':rating, 'user':id},
+                    success: function(data){
+        } });
+    };
+    $(document).ready(function() {
+        $('#radioButtonContainerId input:radio').click(function() {
+    if ($(this).val() === '4') {
+      do_ajax_vote(this, '5');
+    } if ($(this).val() === '3') {
+      do_ajax_vote(this, '4');
+    } if ($(this).val() === '2'){
+      do_ajax_vote(this, '3');
+    }
+            if ($(this).val() === '1'){
+      do_ajax_vote(this, '2');
+    }
+            if ($(this).val() === '0'){
+      do_ajax_vote(this, '1');
+    }
+  });
+    });
+  /* Javascript for search bar auto complete */
+    $(function() {
+    var availableTags = [
+    {{recepients = db(db.auth_user).select()}}
+        {{l=[]}}
+    {{for user in recepients:}}
+    {{l.append(user.first_name)}}
+    {{pass}}
+      {{ for x in l:}}
+        {{if x == l[len(l)-1]:}} 
+            "{{=x}}"
+    {{else:}} "{{=x}}",
+{{pass}}
+    {{pass}}
+    ];
+    $( "#search" ).autocomplete({
+      source: availableTags
+      
+    });
+  });  
+</script>
